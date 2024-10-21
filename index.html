@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OPENCUP LEAGUE 1</title>
+    <title>Cup Stacking Leaderboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -88,7 +88,7 @@
 <body>
 
     <div class="container">
-        <h1>OPENCUP LEAGUE 1</h1>
+        <h1>Cup Stacking Leaderboard</h1>
 
         <!-- Buttons to Show All Scores and Separate Tables -->
         <button class="show-all-button" onclick="toggleScores()">Show All Scores</button>
@@ -134,24 +134,17 @@
                 </thead>
                 <tbody id="basecup-3-body"></tbody>
             </table>
-
-            <h2>BaseCup 2</h2>
-            <table id="basecup-2-table">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Profile</th>
-                        <th>Time</th>
-                    </tr>
-                </thead>
-                <tbody id="basecup-2-body"></tbody>
-            </table>
         </div>
     </div>
 
     <script>
-        // Sample CSV Data
+        // Updated CSV Data with your provided scores
         const csvData = [
+            { Initial: "JL", BaseCup: 3, Time: 0.433 },
+            { Initial: "JL", BaseCup: 3, Time: 0.4 },
+            { Initial: "JL", BaseCup: 4, Time: 1.233 },
+            { Initial: "AL", BaseCup: 3, Time: 0.63 },
+            { Initial: "AL", BaseCup: 4, Time: 1.86 }
         ];
 
         // Function to get profile and flag based on initials
@@ -191,7 +184,7 @@
                         ${name} <img src="${flag}" alt="${name}" class="country">
                     </td>
                     <td>${row.BaseCup}</td>
-                    <td>${row.Time.toFixed(2)}</td>
+                    <td>${row.Time.toFixed(3)}</td>
                 `;
 
                 leaderboardBody.appendChild(tr);
@@ -205,7 +198,7 @@
         // Function to show separate tables for each BaseCup
         function showSeparateTables() {
             // Clear and populate BaseCup tables
-            ['2', '3', '4'].forEach(basecup => {
+            ['3', '4'].forEach(basecup => {
                 const tbody = document.getElementById(`basecup-${basecup}-body`);
                 tbody.innerHTML = '';  // Clear existing rows
 
@@ -222,7 +215,7 @@
                             <img src="https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg" alt="${name}">
                             ${name} <img src="${flag}" alt="${name}" class="country">
                         </td>
-                        <td>${row.Time.toFixed(2)}</td>
+                        <td>${row.Time.toFixed(3)}</td>
                     `;
 
                     tbody.appendChild(tr);
