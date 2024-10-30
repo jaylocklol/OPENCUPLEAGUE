@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flag Replacer with Plist</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/plist/3.0.1/plist.min.js"></script>
+</head>
+<body>
+  <h1>Flag Replacer with Plist</h1>
+  
+  <!-- Upload the large flag image -->
+  <label for="bigFlag">Upload the existing large flag image:</label>
+  <input type="file" id="bigFlag" accept="image/png"><br><br>
+
+  <!-- Upload the plist file -->
+  <label for="plistFile">Upload the plist file:</label>
+  <input type="file" id="plistFile" accept=".plist"><br><br>
+
+  <!-- Upload individual flag images -->
+  <label for="individualFlags">Upload individual flag images:</label>
+  <input type="file" id="individualFlags" accept="image/png" multiple><br><br>
+
+  <!-- Button to generate and download the final image -->
+  <button id="generateButton">Generate Updated Flag Image</button>
+  <a id="downloadLink" style="display: none;">Download Updated Flag Image</a>
+  
+  <canvas id="canvas" style="display: none;"></canvas>
+  
+  <script>
+    document.getElementById('generateButton').addEventListener('click', async () => {
+      const bigFlagInput = document.getElementById('bigFlag');
+      const plistInput = document.getElementById('plistFile');
+      const flagFiles = document.getElementById('individualFlags').files;
+
+      if (!bigFlagInput.files.length || !plistInput.files.length || !flagFiles.length) {
+        alert("Please upload the big flag image, plist file, and individual flag images.");
+        return;
+      }
+
+      // Load the big flag image into canvas
+      const bigFlagImg = await loadImage(bigFlagInput.files[0]);
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = bigFlagImg.width;
+      canvas.height = bigFlagImg.height;
+      ctx.drawImage(bigFlagImg, 0, 0);
+
+      // Parse the plist file for flag positions and dimensions
+      const plistData = await loadPlist(plistInput.files[0]);
+      const flagMap = mapFlagsToPositions(plistData);
+
+      // Map the flag files by name for easier access
+      const flagFilesMap = Array.from(flagFiles).reduce((map, file) => {
+        map[file.name.split('.').slice(0, -1).join('.')] = file;
+        return map;
+      }, {});
+
+      // Overlay each individual flag image based on plist data
+      for (const [flagName, position] of Object.entries(flagMap)) {
+        if (flagFilesMap[flagName]) {
+          const flagImg = await loadImage(flagFilesMap[flagName]);
+          ctx.drawImage(flagImg, position.x, position.y, position.width, position.height);
+        }
+      }
+
+      // Create a downloadable PNG
+      const updatedImage = canvas.toDataURL('image/png');
+      const downloadLink = document.getElementById('downloadLink');
+      downloadLink.href = updatedImage;
+      downloadLink.download = 'updated_flags.png';
+      downloadLink.style.display = 'block';
+      downloadLink.click();
+    });
+
+    // Helper function to load an image from file input
+    function loadImage(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    // Helper function to load and parse a plist file
+    function loadPlist(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const plistData = plist.parse(reader.result);
+            resolve(plistData);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsText(file);
+      });
+    }
+
+    // Helper function to map flag names to their positions from the plist
+    function mapFlagsToPositions(plistData) {
+      const flagMap = {};
+      for (const [key, value] of Object.entries(plistData)) {
+        if (value.x !== undefined && value.y !== undefined && value.width !== undefined && value.height !== undefined) {
+          flagMap[key] = {
+            x: value.x,
+            y: value.y,
+            width: value.width,
+            height: value.height
+          };
+        }
+      }
+      return flagMap;
+    }
+  </script>
+</body>
+</html>
